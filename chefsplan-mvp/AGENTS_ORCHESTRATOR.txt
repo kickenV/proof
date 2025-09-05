@@ -1,0 +1,204 @@
+ChefsPlan Multi‑Agent Orchestrator — SINGLE SOURCE OF TRUTH
+
+Purpose
+- One file for all agent communication, planning, status, and decisions.
+- No scope changes by workers. Only the Orchestrator edits Tasks.
+- Agents only: build, test, refine, deploy; then report here.
+
+Ground Rules (read every time before you start)
+1) Only write in this file. Do not create new docs or checklists elsewhere.
+2) Do not add tasks. Only the Orchestrator adds/edits tasks in the Task Board.
+3) Before starting, CLAIM a task (see Claims Protocol) and wait for lock confirmation rules.
+4) Keep edits minimal and append-only where possible (Activity Log). Don’t rewrite history.
+5) Reference Task IDs in all commits and log entries. Example: "CP-003: implement acceptApplication tests".
+6) If blocked >30m, update the Blockers section with exact error/output, then unclaim the task.
+7) Prefer small, verifiable changes. After each change: build → test → lint (if present) → update status.
+8) Never commit secrets. Use .env.local only. Follow project .gitignore.
+
+Roles
+- Orchestrator (human or designated Copilot): owns Task Board, priorities, acceptance.
+- Contracts Engineer: Solidity + Hardhat, tests, deployments.
+- Frontend Engineer: Next.js integration, wallet, contract calls.
+- QA/Automation: test coverage, e2e flows, validations.
+- DevOps: deploy/verify scripts, basic CI tasks as needed.
+
+Claims Protocol (to prevent chaos)
+- To claim a task, add an entry under Active Claims with:
+  Task ID | Agent | Start UTC | ETA | Scope (1-2 lines) | Current git branch
+- Only one active claim per Task ID. If idle >30m without Activity Log, others may challenge and reclaim.
+- When actively editing files, wrap your change window in a Workblock marker in Activity Log:
+  >>> BEGIN WORKBLOCK CP-XYZ | Agent=NAME | UTC=YYYY-MM-DD HH:MM | Files=[paths]
+  ...describe intent & any commands you will run...
+  >>> END WORKBLOCK CP-XYZ | Agent=NAME | UTC=YYYY-MM-DD HH:MM | Result=PASS/FAIL | Next=...
+
+Definition of Done (project-wide)
+- Contracts: compile clean, tests green (unit & integration), no tx.origin, reentrancy guarded, happy-path e2e on Sepolia.
+- Frontend: wallet connect, network switch to zkSync Era Sepolia (300), post/apply/accept/complete flow works.
+- Docs: README + Quick Start reflect payable accept flow and event names.
+- Deployment: scripts run on zkSync Sepolia, addresses recorded, verification step ready.
+
+Project Commands (Windows PowerShell)
+- Compile: npx hardhat compile
+- Test: npx hardhat test
+- Deploy (Sepolia): npx hardhat run scripts/deploy.js --network zkSyncSepolia
+- Frontend dev: npm run dev
+
+Git Workflow & Branching
+- Never commit directly to main. Create a branch per task and open a PR.
+- Branch naming: <type>/<TaskID>-<slug>
+  Types: feature | fix | chore | docs | test | refactor
+  Examples:
+  - feature/CP-003-tests
+  - fix/CP-002-zksync-ethers-imports
+  - chore/CP-005-deploy-script-polish
+- Commit message format:
+  - Title: "CP-XYZ: imperative summary"
+  - Body: bullets of key changes and validation notes (optional)
+- PR title: "[CP-XYZ] short description"; one Task ID per PR.
+- Merge strategy: Squash & merge; keep history tidy.
+
+Pre-Commit Checklist (lightweight)
+Run locally before pushing. If any step fails, fix and re-run.
+1) Scope sanity
+  - Changes only address the claimed Task ID (no drive-by edits)
+  - Files changed match the Workblock plan
+2) Format
+  - Optional (if Prettier installed): npx prettier -w frontend
+3) Build/contracts
+  - npx hardhat compile
+4) Tests
+  - npx hardhat test
+5) Frontend types (if TS changes)
+  - npm run type-check
+6) Docs sync (if behavior changed)
+  - Verify README and plan/TECHNICAL_SPECIFICATIONS.md match code
+7) Log
+  - Update Activity Log workblock with PASS/FAIL and artifacts
+
+Task Board (authoritative) — owned by Orchestrator
+Status key: TODO | IN-PROGRESS | REVIEW | DONE | BLOCKED
+
+CP-001 Docs/contracts parity and cleanup
+- Goal: Tech specs, README, Quick Start match current code (zksync-ethers, ethers v6, events, payable accept).
+- Checks: No duplicate/conflicting snippets; explorer link correct; RPC via env; one source of truth.
+- Owner: Orchestrator
+- Status: IN-PROGRESS
+
+CP-002 Frontend provider/util alignment
+- Goal: Standardize on zksync-ethers (Provider, Contract) and ethers v6 across frontend utils.
+- Steps:
+  1) Audit frontend/utils/web3.ts and contracts.ts usage
+  2) Replace any zksync-web3 references
+  3) Smoke test minimal call (getShift) against mock/provider
+- Owner: Frontend Engineer
+- Status: TODO
+
+CP-003 Contract tests: happy path escrow funding/release
+- Goal: Unit tests for post → apply → accept(value) → complete → confirm → escrow release.
+- Steps:
+  1) Deploy Reputation, Escrow, ShiftManager; initialize
+  2) Assert events; assert escrow balance + status transitions
+  3) Add 1-2 revert tests (duplicate apply, wrong value)
+- Owner: QA/Automation
+- Status: TODO
+
+CP-004 Frontend minimal e2e page
+- Goal: Page to post a shift and view/apply/accept with value using addresses from .env.local.
+- Steps:
+  1) Add simple pages/ or re-use existing demo
+  2) Wire postShift/apply/accept with value
+  3) Basic UI feedback for tx status
+- Owner: Frontend Engineer
+- Status: TODO
+
+CP-005 Deploy & verify pipeline
+- Goal: Confirm deploy works on zkSync Sepolia; document addresses; prepare verify.
+- Steps:
+  1) Ensure PRIVATE_KEY & RPC ENV set
+  2) Run deploy; capture addresses
+  3) Add verify step and instructions
+- Owner: DevOps
+- Status: TODO
+
+CP-006 ShiftManager payable accept flow enforcement
+- Goal: Ensure acceptApplication is payable and forwards exact ETH to Escrow.createEscrow(shiftId, restaurant, chef, amount).
+- Steps:
+  1) Audit ShiftManager.acceptApplication and Escrow.createEscrow
+  2) Enforce exact value checks; add revert test for wrong msg.value
+  3) Validate events and escrow creation
+- Owner: Contracts Engineer
+- Status: TODO
+
+CP-007 Escrow release guards + autoRelease
+- Goal: No tx.origin usage; add reentrancy guards; implement guarded release and autoRelease.
+- Steps:
+  1) Add nonReentrant to release/autoRelease; validate modifiers/roles
+  2) Add tests for reentrancy attempt and unauthorized release
+  3) Document autoRelease behavior
+- Owner: Contracts Engineer
+- Status: TODO
+
+CP-008 Frontend ABI/addresses wiring
+- Goal: Load addresses from .env.local and wire ABIs in frontend/utils/contracts.ts using zksync-ethers Provider on chain 300.
+- Steps:
+  1) Centralize addresses/types; ensure network check = 300 (0x12C)
+  2) Replace any legacy providers; smoke test a read call
+  3) Minimal UI feedback for tx status
+- Owner: Frontend Engineer
+- Status: TODO
+
+CP-009 Documentation sync
+- Goal: Update plan/TECHNICAL_SPECIFICATIONS.md and plan/QUICK_START_GUIDE.md to reflect payable accept flow, events, explorer link, and env-based RPC.
+- Steps:
+  1) Align docs with current contracts and deployment scripts
+  2) Include explorer: https://sepolia.explorer.zksync.io
+  3) Ensure no conflicting snippets; single source of truth
+- Owner: Docs
+- Status: TODO
+
+CP-010 CI preflight
+- Goal: Add basic CI to run Prettier check, Hardhat compile/tests, and frontend type-check on PRs.
+- Steps:
+  1) Create .github/workflows/ci.yml with Node cache
+  2) Run npx prettier --check ., npx hardhat compile/test, and npx tsc -p frontend/tsconfig.json --noEmit
+  3) Require status checks before merge
+- Owner: DevOps
+- Status: TODO
+
+Active Claims
+(Empty — agents must add entries here before starting work)
+
+Blockers
+(Empty)
+
+Activity Log (append-only; newest at top)
+>>> BEGIN WORKBLOCK CP-001 | Agent=Orchestrator | UTC=2025-09-05 00:00 | Files=[AGENTS_ORCHESTRATOR.txt] | Branch=chore/CP-001-orchestrator-bootstrap
+Plan:
+- Seed Task Board with CP-006..CP-010; post availability announcement
+- Commit changes on chore/CP-001-orchestrator-bootstrap and open PR
+Validation:
+- Sections present: Ground Rules, Git Workflow & Branching, Pre-Commit Checklist, Task Board, Active Claims, Blockers, Activity Log
+- Task Board contains CP-001..CP-010
+Commands:
+- git checkout -b chore/CP-001-orchestrator-bootstrap
+- git add AGENTS_ORCHESTRATOR.txt
+- git commit -m "CP-001: orchestrator bootstrap — seed Task Board CP-001..CP-010 and announce availability"
+Announcement:
+- Workers may now claim tasks under "Active Claims" following the Claims Protocol. Respect file locks.
+>>> END WORKBLOCK CP-001 | Agent=Orchestrator | UTC=2025-09-05 00:10 | Result=PASS | Artifacts=[branch chore/CP-001-orchestrator-bootstrap, PR pending] | Next=Review PR and begin triage of claims
+— Begin entries here —
+
+Template (copy/paste for every action)
+>>> BEGIN WORKBLOCK CP-XXX | Agent=<NAME> | UTC=<YYYY-MM-DD HH:MM> | Files=[path1,path2] | Branch=<name>
+Plan:
+- Steps you will take now
+Validation:
+- Expected outputs/tests
+Commands:
+- (List exact commands you ran)
+>>> END WORKBLOCK CP-XXX | Agent=<NAME> | UTC=<YYYY-MM-DD HH:MM> | Result=PASS/FAIL | Artifacts=<links/paths> | Next=<what remains>
+
+Notes for Agents
+- Keep workblocks short (<=60 minutes). Commit at logical checkpoints; reference Task ID.
+- If you change the Task Board, you must be the Orchestrator.
+- Prefer small PRs/commits: one task or subtask at a time.
