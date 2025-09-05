@@ -202,6 +202,15 @@ CP-010 CI preflight
 - Owner: DevOps
 - Status: TODO
 
+CP-011 Orchestrator tmux-like GUI (Flask + Socket.IO)
+- Goal: Local GUI that renders Task Board, Active Claims, Blockers, and Activity Log from AGENTS_ORCHESTRATOR.txt in live-updating panels.
+- Steps:
+  1) Build Flask app with Socket.IO and file watcher
+  2) Render four panels; update on file change
+  3) Provide minimal README/run instructions (Windows PowerShell)
+- Owner: DevOps
+- Status: IN-PROGRESS
+
 Active Claims
 (Empty — agents must add entries here before starting work)
 
@@ -209,6 +218,18 @@ Blockers
 (Empty)
 
 Activity Log (append-only; newest at top)
+>>> BEGIN WORKBLOCK CP-011 | Agent=Orchestrator | UTC=2025-09-05 00:45 | Files=[orchestrator_gui/**,AGENTS_ORCHESTRATOR.txt] | Branch=feature/CP-011-orchestrator-gui
+Plan:
+- Seed minimal Flask + Socket.IO GUI to visualize orchestrator sections; Windows-friendly
+Validation:
+- Flask app starts; GUI shows four live panels with content from AGENTS_ORCHESTRATOR.txt
+Commands:
+- python orchestrator_gui/app.py
+Notes:
+- This is view-only; all edits remain in AGENTS_ORCHESTRATOR.txt
+Next:
+- A-DEVOPS CLAIM to add README and packaging, then wire CI for optional preview
+>>> END WORKBLOCK CP-011 | Agent=Orchestrator | UTC=2025-09-05 00:47 | Result=ASSIGNED | Artifacts=[orchestrator_gui/] | Next=Await claim by A-DEVOPS
 >>> BEGIN WORKBLOCK CP-003 | Agent=Orchestrator | UTC=2025-09-05 00:35 | Files=[test/ShiftManager.test.js,contracts/ShiftManager.sol,contracts/Escrow.sol] | Branch=test/CP-003-escrow-happy-path
 Plan:
 - DEFINE_SPEC → A-QA: Write unit tests for escrow lifecycle: post → apply → accept(value) → complete → confirm → release

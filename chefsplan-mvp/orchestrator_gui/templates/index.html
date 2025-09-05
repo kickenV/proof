@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ChefsPlan Orchestrator — tmux-like Panels</title>
+    <style>
+      :root{
+        --bg: #0f1216; --panel: #161a20; --fg: #e6edf3; --sub:#9da5b4; --accent:#2f81f7; --muted:#30363d;
+      }
+      html, body { height:100%; margin:0; background:var(--bg); color:var(--fg); font:14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif; }
+      .grid { display:grid; grid-template-columns: 1fr 1fr; grid-template-rows: 40% 60%; gap:10px; padding:10px; height:100%; box-sizing:border-box; }
+      .panel { background:var(--panel); border:1px solid var(--muted); border-radius:6px; padding:8px; overflow:auto; }
+      .title { font-weight:600; color:var(--sub); margin:0 0 6px; display:flex; align-items:center; gap:8px; }
+      pre { white-space: pre-wrap; word-wrap: break-word; }
+      .bar { position:fixed; top:0; left:0; right:0; height:36px; background:#0b0e12; border-bottom:1px solid var(--muted); display:flex; align-items:center; gap:12px; padding:0 10px; }
+      .pill { background:#0b1d3a; color:#91b4ff; border:1px solid #1f3b6a; border-radius:999px; padding:4px 8px; font-size:12px; }
+      .grid { margin-top:36px; }
+      .muted { color:var(--sub); }
+      .footer { position:fixed; bottom:0; left:0; right:0; height:26px; background:#0b0e12; border-top:1px solid var(--muted); color:var(--sub); display:flex; align-items:center; gap:12px; padding:0 10px; font-size:12px; }
+    </style>
+  </head>
+  <body>
+    <div class="bar">
+      <div class="pill">ChefsPlan Orchestrator</div>
+      <div class="muted">Live view of Task Board, Active Claims, Blockers, and Activity Log</div>
+    </div>
+    <div class="grid">
+      <div class="panel">
+        <p class="title">Task Board</p>
+        <pre id="task_board"></pre>
+      </div>
+      <div class="panel">
+        <p class="title">Active Claims</p>
+        <pre id="active_claims"></pre>
+      </div>
+      <div class="panel">
+        <p class="title">Blockers</p>
+        <pre id="blockers"></pre>
+      </div>
+      <div class="panel">
+        <p class="title">Activity Log</p>
+        <pre id="activity_log"></pre>
+      </div>
+    </div>
+    <div class="footer">
+      <span>Use AGENTS_ORCHESTRATOR.txt as the single source of truth.</span>
+    </div>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" integrity="sha384-bN9ykJgD8/6n5sR8dVXnxTG1yPHeL7Hk8y7sppQ3V14j1Chl7ouF5q1v2rQ5P9V1" crossorigin="anonymous"></script>
+    <script>
+      const socket = io();
+      socket.on('orchestrator_update', data => {
+        for (const key of ['task_board','active_claims','blockers','activity_log']){
+          const el = document.getElementById(key);
+          if (el) el.textContent = data[key] || '';
+        }
+      });
+    </script>
+  </body>
+</html>
