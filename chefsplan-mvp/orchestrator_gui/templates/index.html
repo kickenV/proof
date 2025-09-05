@@ -25,7 +25,7 @@
       <div class="pill">ChefsPlan Orchestrator</div>
       <div class="muted">Live view of Task Board, Active Claims, Blockers, and Activity Log</div>
     </div>
-    <div class="grid">
+  <div class="grid">
       <div class="panel">
         <p class="title">Task Board</p>
         <pre id="task_board"></pre>
@@ -35,8 +35,8 @@
         <pre id="active_claims"></pre>
       </div>
       <div class="panel">
-        <p class="title">Blockers</p>
-        <pre id="blockers"></pre>
+    <p class="title">Blockers</p>
+    <pre id="blockers"></pre>
       </div>
       <div class="panel">
         <p class="title">Activity Log</p>
@@ -53,6 +53,44 @@
         for (const key of ['task_board','active_claims','blockers','activity_log']){
           const el = document.getElementById(key);
           if (el) el.textContent = data[key] || '';
+        }
+      });
+    </script>
+    <script>
+      // Minimal claim form injected in footer for now
+      const footer = document.querySelector('.footer');
+      const form = document.createElement('form');
+      form.style.display = 'flex';
+      form.style.alignItems = 'center';
+      form.style.gap = '6px';
+      form.innerHTML = `
+        <input placeholder="Token" name="token" style="width:110px" required />
+        <input placeholder="Task ID (CP-XXX)" name="taskId" style="width:120px" required />
+        <input placeholder="Agent" name="agent" style="width:110px" required />
+        <input placeholder="Start UTC (YYYY-MM-DD HH:MM)" name="startUtc" style="width:185px" required />
+        <input placeholder="ETA" name="eta" style="width:70px" required />
+        <input placeholder="Scope" name="scope" style="width:240px" required />
+        <input placeholder="Branch" name="branch" style="width:220px" required />
+        <button type="submit">Claim</button>
+      `;
+      footer.appendChild(form);
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData(form);
+        const payload = Object.fromEntries(fd.entries());
+        try{
+          const res = await fetch('/api/claim', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (!data.ok) {
+            alert('Claim failed: ' + (data.error || 'unknown'));
+          } else {
+            form.reset();
+          }
+        } catch (err){
+          alert('Network error');
         }
       });
     </script>

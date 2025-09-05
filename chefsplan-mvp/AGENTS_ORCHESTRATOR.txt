@@ -218,6 +218,18 @@ Blockers
 (Empty)
 
 Activity Log (append-only; newest at top)
+>>> BEGIN WORKBLOCK CP-011 | Agent=Orchestrator | UTC=2025-09-05 01:00 | Files=[orchestrator_gui/app.py,orchestrator_gui/templates/index.html,orchestrator_gui/README.md] | Branch=feature/CP-011-orchestrator-gui
+Plan:
+- Add guarded write endpoint /api/claim with token; footer claim form to append Active Claims lines
+Validation:
+- POST requires ORCH_WRITE_TOKEN; duplicate claims rejected; panels live-update
+Commands:
+- set ORCH_WRITE_TOKEN and run app; submit a test claim
+Notes:
+- Write access is optional and guarded; AGENTS_ORCHESTRATOR.txt remains the source of truth
+Next:
+- A-DEVOPS to add requirements.txt and a Windows startup script
+>>> END WORKBLOCK CP-011 | Agent=Orchestrator | UTC=2025-09-05 01:05 | Result=PASS | Artifacts=[/api/claim, footer form] | Next=requirements.txt & startup script
 >>> BEGIN WORKBLOCK CP-011 | Agent=Orchestrator | UTC=2025-09-05 00:45 | Files=[orchestrator_gui/**,AGENTS_ORCHESTRATOR.txt] | Branch=feature/CP-011-orchestrator-gui
 Plan:
 - Seed minimal Flask + Socket.IO GUI to visualize orchestrator sections; Windows-friendly
