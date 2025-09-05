@@ -209,6 +209,35 @@ Blockers
 (Empty)
 
 Activity Log (append-only; newest at top)
+>>> BEGIN WORKBLOCK CP-003 | Agent=Orchestrator | UTC=2025-09-05 00:35 | Files=[test/ShiftManager.test.js,contracts/ShiftManager.sol,contracts/Escrow.sol] | Branch=test/CP-003-escrow-happy-path
+Plan:
+- DEFINE_SPEC → A-QA: Write unit tests for escrow lifecycle: post → apply → accept(value) → complete → confirm → release
+- RESEARCH: Inspect current contracts and artifacts for events and guards
+- TEST: Implement tests incl. 2 reverts (duplicate apply, wrong msg.value)
+Acceptance:
+- Tests assert: events emitted, escrow balance updated, status transitions correct, release guarded
+- Revert tests cover wrong value and duplicate apply
+- npx hardhat test passes
+Notes:
+- No tx.origin usage; ensure reentrancy guards are respected in release paths
+Next:
+- A-QA CLAIM under Active Claims with ETA and branch; proceed per Pre-Commit Checklist
+>>> END WORKBLOCK CP-003 | Agent=Orchestrator | UTC=2025-09-05 00:35 | Result=ASSIGNED | Artifacts=[] | Next=Await claim by A-QA
+
+>>> BEGIN WORKBLOCK CP-002 | Agent=Orchestrator | UTC=2025-09-05 00:32 | Files=[frontend/utils/web3.ts,frontend/utils/contracts.ts,frontend/pages/web3-demo.tsx] | Branch=feature/CP-002-frontend-provider-alignment
+Plan:
+- DEFINE_SPEC → A-FRONTEND: Standardize to ethers v6 + zksync-ethers Provider/Contract in frontend utils
+- RESEARCH: Audit imports/usages in web3.ts and contracts.ts; remove legacy providers
+- IMPLEMENT: Wire addresses from .env.local; ensure network id = 300 (0x12C)
+Acceptance:
+- Read call smoke test works (e.g., getShift or equivalent)
+- All imports use ethers v6 and zksync-ethers only
+- Type-check passes: npx tsc -p frontend/tsconfig.json --noEmit
+Notes:
+- Keep API surface stable; avoid drive-by refactors
+Next:
+- A-FRONTEND CLAIM under Active Claims with ETA and branch; proceed per Pre-Commit Checklist
+>>> END WORKBLOCK CP-002 | Agent=Orchestrator | UTC=2025-09-05 00:32 | Result=ASSIGNED | Artifacts=[] | Next=Await claim by A-FRONTEND
 >>> BEGIN WORKBLOCK CP-001 | Agent=Orchestrator | UTC=2025-09-05 00:00 | Files=[AGENTS_ORCHESTRATOR.txt] | Branch=chore/CP-001-orchestrator-bootstrap
 Plan:
 - Seed Task Board with CP-006..CP-010; post availability announcement
