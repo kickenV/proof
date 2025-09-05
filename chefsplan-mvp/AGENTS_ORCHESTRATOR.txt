@@ -22,6 +22,43 @@ Roles
 - QA/Automation: test coverage, e2e flows, validations.
 - DevOps: deploy/verify scripts, basic CI tasks as needed.
 
+Worker Agents Roster (controlled by Orchestrator)
+- A-CONTRACTS (Contracts Engineer)
+  Capabilities: Solidity feature/revert tests, Hardhat tasks, deployment scripts.
+  Primary outputs: contract code changes, unit/integration tests, event/spec alignment.
+- A-FRONTEND (Frontend Engineer)
+  Capabilities: Next.js pages and hooks, ethers v6 + zksync-ethers integration, minimal UX for tx state.
+  Primary outputs: typed utilities, pages/components, ABI/address wiring.
+- A-QA (QA/Automation)
+  Capabilities: test design, coverage improvements, scenario/e2e scripts, fuzz/revert tests.
+  Primary outputs: reproducible tests, coverage reports, bug tickets.
+- A-DEVOPS (DevOps)
+  Capabilities: deploy/verify, .env management, GitHub Actions, caching and artifacts.
+  Primary outputs: scripts, CI workflows, documented addresses.
+
+Orchestrator Control Verbs (to be used in Activity Log)
+- DEFINE_SPEC: produce a function/task spec with inputs/outputs, invariants, and acceptance criteria.
+- RESEARCH: audit repo context and references; summarize findings and unknowns.
+- IMPLEMENT: make minimal, scoped changes; keep APIs stable unless approved.
+- TEST: write or update tests (happy path + 1-2 negative) until green.
+- DOCS: sync technical docs and quick start with behavior.
+- REPORT: summarize results, residual risks, and next steps.
+
+Function Creation Protocol (for new or updated functions)
+1) DEFINE_SPEC
+  - Inputs: purpose/business context, function signature draft, pre/post-conditions, events, error cases.
+  - Outputs: short spec embedded in Activity Log with acceptance criteria.
+2) RESEARCH
+  - Search usages, related interfaces, and tests; note constraints (auth, reentrancy, value).
+3) IMPLEMENT
+  - Small patch with guardrails (no tx.origin, reentrancy guards where needed); adhere to existing style.
+4) TEST
+  - Minimum: happy path + wrong-value/unauthorized reverts; keep tests deterministic.
+5) VALIDATE
+  - Pre-Commit Checklist passes locally (compile, test, types, format, lint if configured).
+6) DOCS
+  - Update plan/TECHNICAL_SPECIFICATIONS.md and plan/QUICK_START_GUIDE.md if behavior changed.
+
 Claims Protocol (to prevent chaos)
 - To claim a task, add an entry under Active Claims with:
   Task ID | Agent | Start UTC | ETA | Scope (1-2 lines) | Current git branch
